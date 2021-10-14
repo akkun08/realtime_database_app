@@ -6,20 +6,25 @@
       <div class="col-sm-auto">
         <input type="text" v-model="data.find" class="form-control" />
       </div>
-      <button class="col-sm-auto btn btn-primary" @click="getData">
+      <button @click="getData" class="col-sm-auto btn btn-primary">
         Click
       </button>
     </div>
-    <div class="alert alert-light">{{ data.fire_data }}</div>
+    <ul v-for="(item, key) in data.fire_data" class="list-group">
+      <li class="list-group-item text-start">
+        <strong>{{ key }}</strong
+        ><br />{{ item }}
+      </li>
+    </ul>
   </section>
 </template>
 
 <script>
 import axios from "axios";
-import { onMounted, reactive } from "vue";
+import { reactive } from "vue";
 
 let url =
-  "https://akkun-vue3-50410-default-rtdb.firebaseio.com/person.json?orderBy=%22$key%22&equalTo=%22";
+  "https://akkun-vue3-50410-default-rtdb.firebaseio.com/person.json?orderBy=%22age%22";
 
 export default {
   setup(props) {
@@ -30,11 +35,12 @@ export default {
       fire_data: {},
     });
     const getData = () => {
-      let id_url = url + data.find + "%22";
+      let range = data.find.split(",");
+      let age_url = url + "&startAt=" + range[0] + "&endAt=" + range[1];
       axios
-        .get(id_url)
+        .get(age_url)
         .then((result) => {
-          data.message = "get ID" + data.find;
+          data.message = "get ID=" + data.find;
           if (result.data != null) {
             data.fire_data = result.data;
           } else {
@@ -46,9 +52,6 @@ export default {
           data.fire_data = {};
         });
     };
-    onMounted(() => {
-      getData();
-    });
     return { data, getData };
   },
 };
