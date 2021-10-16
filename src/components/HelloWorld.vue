@@ -2,57 +2,88 @@
   <section class="alert alert-primary">
     <h1>{{ data.title }}</h1>
     <p>{{ data.message }}</p>
-    <div class="row my-2">
-      <div class="col-sm-auto">
-        <input type="text" v-model="data.find" class="form-control" />
+    <div class="text-start">
+      <div class="form-group">
+        <label for="">Email</label
+        ><input type="text" v-model="data.email" class="form-control" />
       </div>
-      <button @click="getData" class="col-sm-auto btn btn-primary">
-        Click
-      </button>
+      <div class="form-group">
+        <label for="">Name</label
+        ><input type="text" v-model="data.username" class="form-control" />
+      </div>
+      <div class="form-group">
+        <labal>Age</labal>
+        <input type="text" v-model="data.age" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="">Tel</label
+        ><input type="text" v-model="data.tel" class="form-control" />
+      </div>
+      <button @click="addData" class="btn btn-primary my-3">Click</button>
+      <ul v-for="(item, key) in data.fire_data" class="list-group">
+        <li class="list-group-item text-start">
+          <strong>{{ key }}</strong
+          ><br />
+          {{ item }}
+        </li>
+      </ul>
     </div>
-    <ul v-for="(item, key) in data.fire_data" class="list-group">
-      <li class="list-group-item text-start">
-        <strong>{{ key }}</strong
-        ><br />{{ item }}
-      </li>
-    </ul>
   </section>
 </template>
 
 <script>
 import axios from "axios";
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 
-let url =
-  "https://akkun-vue3-50410-default-rtdb.firebaseio.com/person.json?orderBy=%22age%22";
+let url = "https://akkun-vue3-50410-default-rtdb.firebaseio.com/person";
 
 export default {
   setup(props) {
     const data = reactive({
       title: "Firebase",
       message: "This is Firebase sample.",
-      find: "",
+      email: "",
+      username: "",
+      tel: "",
+      age: 0,
       fire_data: {},
     });
+    const addData = () => {
+      if (data.username == "") {
+        console.log("no-username!");
+        return;
+      }
+      let add_url = url + "/" + data.email + ".json";
+      let item = {
+        name: data.username,
+        age: data.age,
+        tel: data.tel,
+      };
+      axios.put(add_url, item).then((re) => {
+        data.email = "";
+        data.username = "";
+        data.age = 0;
+        data.tel = "";
+        getData();
+      });
+    };
     const getData = () => {
-      let range = data.find.split(",");
-      let age_url = url + "&startAt=" + range[0] + "&endAt=" + range[1];
+      let all_url = url + ".json";
       axios
-        .get(age_url)
+        .get(all_url)
         .then((result) => {
-          data.message = "get ID=" + data.find;
-          if (result.data != null) {
-            data.fire_data = result.data;
-          } else {
-            data.fire_data = "no data found...";
-          }
+          data.message = "get all data.";
+          data.fire_data = result.data;
         })
         .catch((error) => {
           data.message = "ERROR!";
           data.fire_data = {};
         });
     };
-    return { data, getData };
+    onMounted(() => {
+      getData();
+    });
+    return { data, addData, getData };
   },
 };
 </script>
